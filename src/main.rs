@@ -1,10 +1,10 @@
-use unic::ucd::{Block, BlockIter, GeneralCategory};
-use unidecode::unidecode;
-use std::collections::HashMap;
 use kdam::{tqdm, BarExt};
+use std::collections::HashMap;
+use std::io::{self, Write};
+use unic::ucd::{BlockIter, GeneralCategory};
+use unidecode::unidecode;
 
 // there exists PropList under unic::ucd::prop_list, but it is not public???
-
 
 fn build_unicode_to_ascii_map() -> HashMap<String, char> {
     // build backwards map of unicode to ascii
@@ -13,7 +13,6 @@ fn build_unicode_to_ascii_map() -> HashMap<String, char> {
     // for each unicode block in first 20
     let mut pb = tqdm!(desc = "Unicode Block", position = 0);
     for block in BlockIter::new() {
-
         pb.update(1);
         //pb.write(format!("Now loading block {}...", block.name));
 
@@ -21,7 +20,8 @@ fn build_unicode_to_ascii_map() -> HashMap<String, char> {
         for c in tqdm!(block.range.iter(), position = 1, desc = "Codepoint") {
             if GeneralCategory::of(c) == GeneralCategory::OtherLetter
                 || GeneralCategory::of(c) == GeneralCategory::OtherSymbol
-                || GeneralCategory::of(c) == GeneralCategory::PrivateUse {
+                || GeneralCategory::of(c) == GeneralCategory::PrivateUse
+            {
                 continue;
             }
 
@@ -49,7 +49,31 @@ fn build_unicode_to_ascii_map() -> HashMap<String, char> {
     map
 }
 
-fn replace_all(input: &str, map: &std::collections::HashMap<String, char>) -> String {
+fn choose_shortest_by_bytes(replacements: Vec<String>) -> String {
+    let shortest = replacements
+        .iter()
+        .min_by_key(|s| s.len())
+        .unwrap()
+        .to_string();
+
+    shortest
+}
+
+fn choose_shortest_by_chars(replacements: Vec<String>) -> String {
+    let shortest = replacements
+        .iter()
+        .min_by_key(|s| s.chars().count())
+        .unwrap()
+        .to_string();
+
+    shortest
+}
+
+fn replace_all(
+    input: &str,
+    map: &std::collections::HashMap<String, char>,
+    choose_shortest: fn(Vec<String>) -> String,
+) -> String {
     // if input is empty, return empty string
     if input.is_empty() {
         return String::new();
@@ -62,7 +86,7 @@ fn replace_all(input: &str, map: &std::collections::HashMap<String, char>) -> St
 
     // get all possible replacements
     let mut replacements = Vec::new();
-    
+
     // replace this letter
     for i in 1..=input.len() {
         // get substring
@@ -70,17 +94,16 @@ fn replace_all(input: &str, map: &std::collections::HashMap<String, char>) -> St
         // if substring is in map
         if let Some(replacement) = map.get(substring) {
             // add to replacements
-            replacements.push(
-                replacement.to_string() + &replace_all(&input[i..], map),
-            );
+            replacements
+                .push(replacement.to_string() + &replace_all(&input[i..], map, choose_shortest));
         }
     }
 
     // skip this letter
-    replacements.push(input[..1].to_string() + &replace_all(&input[1..], map));
+    replacements.push(input[..1].to_string() + &replace_all(&input[1..], map, choose_shortest));
 
-    // find shortest element in replacements list 
-    let shortest = replacements.iter().min_by_key(|x| x.chars().count()).unwrap();
+    // find shortest element in replacements list
+    let shortest = choose_shortest(replacements);
 
     // return shortest replacement
     shortest.to_string()
@@ -92,13 +115,35 @@ fn main() {
 
     // take string input, ascii
     let mut input = String::new();
-    std::io::stdin().read_line(&mut input).unwrap();
+
+    // prompt user for input and read from same line
+    print!("Enter string to shorten: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut input).unwrap();
+
     let input = input.trim();
 
-    println!("{} ({})", input, input.chars().count());
+    println!(
+        "{: <30} {: <20} ({})",
+        "Input:",
+        input,
+        input.chars().count()
+    );
 
     // replace all
-    let replaced = replace_all(&input, &map);
-    // output
-    println!("{} ({})", replaced, replaced.chars().count());
+    let replaced_bytes = replace_all(&input, &map, choose_shortest_by_bytes);
+    println!(
+        "{: <30} {: <20} ({})",
+        "Shortest in bytes:",
+        replaced_bytes,
+        replaced_bytes.len()
+    );
+
+    let replaced_chars = replace_all(&input, &map, choose_shortest_by_chars);
+    println!(
+        "{: <30} {: <20} ({})",
+        "Shortest in characters used:",
+        replaced_chars,
+        replaced_chars.chars().count()
+    );
 }
