@@ -1,7 +1,7 @@
 use kdam::{tqdm, BarExt};
 use std::collections::HashMap;
 use std::io::{self, Write};
-use unic::ucd::{BlockIter, GeneralCategory};
+use unic::ucd::{Block, BlockIter, GeneralCategory, Name};
 use unidecode::unidecode;
 
 // there exists PropList under unic::ucd::prop_list, but it is not public???
@@ -10,20 +10,43 @@ fn build_unicode_to_ascii_map() -> HashMap<String, char> {
     // build backwards map of unicode to ascii
     let mut map: HashMap<String, char> = std::collections::HashMap::new();
 
-    // for each unicode block in first 20
-    let mut pb = tqdm!(desc = "Unicode Block", position = 0);
-    for block in BlockIter::new() {
+    // write map to file
+    let mut file = std::fs::File::create("map.txt").unwrap();
+
+    let blocks: Vec<Block> = BlockIter::new().collect();
+    let use_blocks: Vec<usize> = vec![0,3,4,6,7,8,9,10];
+    let slice: Vec<&Block> = blocks
+        .iter()
+        .enumerate()
+        .filter(|(i, _)| use_blocks.contains(i))
+        .map(|(_, b)| b)
+        .collect();
+
+    // for each unicode block
+    let mut pb = tqdm!(desc = "Unicode Block", position = 0, total = slice.len());
+
+    for block in slice {
         pb.update(1);
-        //pb.write(format!("Now loading block {}...", block.name));
+
+        // skip if block name contains Arabic Cyrillic or Hebrew
+        if block.name.contains("Arabic")
+            || block.name.contains("Cyrillic")
+            || block.name.contains("Hebrew")
+            || block.name.contains("CJK")
+
+        {
+            continue;
+        }
+
+        pb.write(format!("Now loading block {}...", block.name));
 
         // for each codepoint in block
         for c in tqdm!(block.range.iter(), position = 1, desc = "Codepoint") {
-            if GeneralCategory::of(c) == GeneralCategory::OtherLetter
-                || GeneralCategory::of(c) == GeneralCategory::OtherSymbol
+            /*if GeneralCategory::of(c) == GeneralCategory::OtherLetter
                 || GeneralCategory::of(c) == GeneralCategory::PrivateUse
             {
                 continue;
-            }
+            } */
 
             // skip if ideographic
             //if PropList::of(c).contains(PropList::Ideographic) {
@@ -35,11 +58,15 @@ fn build_unicode_to_ascii_map() -> HashMap<String, char> {
             if !ascii.is_empty() && ascii.len() > 1 {
                 if map.contains_key(&ascii) {
                     if map[&ascii].to_string().chars().count() > c.to_string().chars().count() {
+                        file.write(format!("{} -> {}\n", ascii, c).as_bytes())
+                            .expect("Unable to write data");
                         map.insert(ascii, c);
                     } else {
                         continue;
                     }
                 } else {
+                    file.write(format!("{} -> {}\n", ascii, c).as_bytes())
+                            .expect("Unable to write data");
                     map.insert(ascii, c);
                 }
             }
