@@ -93,6 +93,7 @@ version = "0.1.0"
 dependencies = [
  "kdam",
  "unic",
+ "unic-char-range",
  "unidecode",
 ]
 

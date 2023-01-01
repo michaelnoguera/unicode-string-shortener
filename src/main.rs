@@ -1,7 +1,8 @@
 use kdam::{tqdm, BarExt};
 use std::collections::HashMap;
 use std::io::{self, Write};
-use unic::ucd::{BlockIter, GeneralCategory};
+use unic::ucd::{Block, BlockIter, GeneralCategory, Name};
+use unic_char_range::{chars, CharRange};
 use unidecode::unidecode;
 
 // there exists PropList under unic::ucd::prop_list, but it is not public???
@@ -10,20 +11,35 @@ fn build_unicode_to_ascii_map() -> HashMap<String, char> {
     // build backwards map of unicode to ascii
     let mut map: HashMap<String, char> = std::collections::HashMap::new();
 
-    // for each unicode block in first 20
-    let mut pb = tqdm!(desc = "Unicode Block", position = 0);
-    for block in BlockIter::new() {
+    // write map to file
+    let mut file = std::fs::File::create("map.txt").unwrap();
+
+    let ranges = vec![
+        (0x0000, 0x007F), // Basic Latin
+        (0x0080, 0x00FF), // Latin-1 Supplement
+        (0x0100, 0x017F), // Latin Extended-A
+        (0x0180, 0x024F), // Latin Extended-B
+        (0x0250, 0x02AF), // IPA Extensions
+    ];
+
+    // for each unicode block
+    let mut pb = tqdm!(desc = "Range", position = 0, total = ranges.len());
+
+    for r in ranges {
         pb.update(1);
-        //pb.write(format!("Now loading block {}...", block.name));
+
+        let a: char = char::from_u32(r.0).unwrap();
+        let b: char = char::from_u32(r.1).unwrap();
+
+        let r: CharRange = CharRange::closed(a,b);
 
         // for each codepoint in block
-        for c in tqdm!(block.range.iter(), position = 1, desc = "Codepoint") {
-            if GeneralCategory::of(c) == GeneralCategory::OtherLetter
-                || GeneralCategory::of(c) == GeneralCategory::OtherSymbol
+        for c in tqdm!(r.iter(), position = 1, desc = "Codepoint") {
+            /*if GeneralCategory::of(c) == GeneralCategory::OtherLetter
                 || GeneralCategory::of(c) == GeneralCategory::PrivateUse
             {
                 continue;
-            }
+            } */
 
             // skip if ideographic
             //if PropList::of(c).contains(PropList::Ideographic) {
@@ -35,11 +51,15 @@ fn build_unicode_to_ascii_map() -> HashMap<String, char> {
             if !ascii.is_empty() && ascii.len() > 1 {
                 if map.contains_key(&ascii) {
                     if map[&ascii].to_string().chars().count() > c.to_string().chars().count() {
+                        file.write(format!("U+{:#04x}: {} -> {}\n", c as u8, ascii, c).as_bytes())
+                            .expect("Unable to write data");
                         map.insert(ascii, c);
                     } else {
                         continue;
                     }
                 } else {
+                    file.write(format!("U+{:#04x}: {} -> {}\n", c as u8, ascii, c).as_bytes())
+                            .expect("Unable to write data");
                     map.insert(ascii, c);
                 }
             }
