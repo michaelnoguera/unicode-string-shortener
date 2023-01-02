@@ -1,11 +1,8 @@
 use kdam::{tqdm, BarExt};
 use std::collections::HashMap;
-use std::io::{self, Write};
-use unic::ucd::{Block, BlockIter, GeneralCategory, Name};
-use unic_char_range::{chars, CharRange};
+use std::io::{self, BufRead, Write};
+use unic_char_range::{CharRange};
 use unidecode::unidecode;
-use std::fs::File;
-use std::io::{BufRead, BufReader};
 
 fn build_unicode_to_ascii_map() -> HashMap<String, char> {
     // build backwards map of unicode to ascii
@@ -37,13 +34,13 @@ fn build_unicode_to_ascii_map() -> HashMap<String, char> {
         (0x0780, 0x107B), // Latin Extended-F
         (0xDF00, 0x1DFF), // Latin Extended-G
         /* Other blocks containing latin characters */
-        (0x20A0, 0x20CF), // Currency Symbols
-        (0x2200, 0x22FF), // Mathematical Operators
-        (0x2400, 0x243F), // Control Pictures
-        (0x3300, 0x33FF), // CJK Compatibility
-        (0x2460, 0x24FF), // Enclosed Alphanumerics
+        (0x20A0, 0x20CF),   // Currency Symbols
+        (0x2200, 0x22FF),   // Mathematical Operators
+        (0x2400, 0x243F),   // Control Pictures
+        //(0x3300, 0x33FF),   // CJK Compatibility
+        (0x2460, 0x24FF),   // Enclosed Alphanumerics
         (0x1F100, 0x1F1FF), // Enclosed Alphanumeric Supplement
-        (0x3200, 0x32FF), // Enclosed CJK Letters and Months
+        //(0x3200, 0x32FF),   // Enclosed CJK Letters and Months
         (0x1F700, 0x1F77F), // Alchemical symbols
     ];
 
@@ -62,34 +59,100 @@ fn build_unicode_to_ascii_map() -> HashMap<String, char> {
             None => continue,
         };
 
-        let r: CharRange = CharRange::closed(a,b);
+        let r: CharRange = CharRange::closed(a, b);
 
         // for each codepoint in block
         for c in tqdm!(r.iter(), position = 1, desc = "Codepoint") {
             let ascii = unidecode(&c.to_string());
 
-            if !ascii.is_empty() {
-                if map.contains_key(&ascii) {
-                    if map[&ascii].to_string().chars().count() > c.to_string().chars().count() {
-                        file.write(format!("{:#08x}\t{}\t{}\n", c as u8, c, ascii).as_bytes())
-                            .expect("Unable to write data");
-                        map.insert(ascii, c);
-                    } else {
-                        continue;
-                    }
-                } else {
-                    file.write(format!("{:#08x}\t{}\t{}\n", c as u8, c, ascii).as_bytes())
-                            .expect("Unable to write data");
-                    map.insert(ascii, c);
-                }
+            if !ascii.is_empty() && ascii != "[?]" {
+                file.write(format!("{:#08x}\t{}\t{}\n", c as u32, c, ascii).as_bytes())
+                    .expect("Unable to write data");
+                map.insert(ascii, c);
             } else {
-                file.write(format!("{:#08x}\t{}\t\n", c as u8, c).as_bytes())
-                            .expect("Unable to write data");
+                file.write(format!("{:#08x}\t{}\t\n", c as u32, c).as_bytes())
+                    .expect("Unable to write data");
             }
         }
     }
     eprint!("{}", "\n".repeat(2));
     map
+}
+
+/* Read from map.tsv */
+fn load_map_from_tsv(path: &str) -> Option<HashMap<String, char>> {
+    let mut map: HashMap<String, char> = std::collections::HashMap::new();
+
+    let f = match std::fs::File::open(path) {
+        Ok(f) => f,
+        Err(e) => match e.kind() {
+            io::ErrorKind::NotFound => return None,
+            _ => {
+                panic!("Error opening file: {}", e);
+            }
+        }
+    };
+
+    let f = std::io::BufReader::new(f);
+
+    // read each line
+    for line in f.lines() {
+        let line = line.unwrap();
+
+        // split line into parts
+        let parts: Vec<String> = line.split('\t').map(|s| s.to_string()).collect();
+
+        let without_prefix: &str = parts[0].trim_start_matches("0x");
+        let codepoint: u32 = u32::from_str_radix(without_prefix, 16).unwrap();
+        
+        let c = parts[1].chars().next().unwrap();
+
+        assert!(codepoint == c as u32);
+
+        let ascii: Vec<String> = parts.get(2..).unwrap().to_vec();
+
+        for a in ascii {
+            // check if duplicate
+            if map.contains_key(&a) {
+                panic!("Duplicate entry in tsv file: {} & {} -> {}", c, map[&a], a);
+            }
+
+            map.insert(a, c);
+        }
+    }
+
+    Some(map)
+}
+
+fn store_map_as_bincode(map: &HashMap<String, char>, path: &str) -> Result<(), &'static str> {
+    let mut file = match std::fs::File::create(path) {
+        Ok(file) => file,
+        Err(e) => panic!("Error creating file: {}", e),
+    };
+
+    match bincode::serialize_into(&mut file, map) {
+        Ok(_) => {},
+        Err(_) => return Err("Error serializing data to file"),
+    };
+
+    Ok(())
+}
+
+fn load_map_from_bincode(file: &str) -> Option<HashMap<String, char>> {
+    let mut file = match std::fs::File::open(file) {
+        Ok(file) => file,
+        Err(e) => match e.kind() {
+            io::ErrorKind::NotFound => return None,
+            _ => {
+                panic!("Error opening file: {}", e);
+            }
+        }
+    };
+
+    let map: HashMap<String, char> = match bincode::deserialize_from(&mut file) {
+        Ok(map) => return Some(map),
+        Err(e) => panic!("Error deserializing data from file: {}", e)
+    };
 }
 
 fn choose_shortest_by_bytes(replacements: Vec<String>) -> String {
@@ -153,21 +216,28 @@ fn replace_all(
 }
 
 fn main() {
-    /* fix file */
-    let f = File::open("map.tsv").expect("Unable to open file");
-    let mut g = File::create("map2.tsv").expect("Unable to create file");
-    let f = BufReader::new(f);
+    let map: HashMap<String, char>;
 
-    for line in f.lines() {
-        let line = line.expect("Unable to read line");
-        assert!(line.chars().nth(1).unwrap() == '\t');
-        g.write(format!("{:#08x}\t{}\n", line.split('\t').nth(0).unwrap().chars().nth(0).unwrap() as u32, line).as_bytes()).expect("Unable to write data");
-    }
+    // if there is a map.bincode file, use that
+    map = match load_map_from_bincode("map.bincode") {
+        Some(map) => map,
+        None => {
+            // if there is no map.bincode file, load from map.tsv
+            let map = match load_map_from_tsv("map.tsv") {
+                Some(map) => map,
+                None => panic!("Unable to load map from tsv file"),
+            };
 
+            // once loaded, store map as bincode
+            store_map_as_bincode(&map, "map.bincode").expect("Error storing map as bincode");
 
+            map
+        }
+    };
 
-    /*let map = build_unicode_to_ascii_map();
     println!("Map size: {}", map.len());
+
+        
 
     // take string input, ascii
     let mut input = String::new();
@@ -201,5 +271,5 @@ fn main() {
         "Shortest in characters used:",
         replaced_chars,
         replaced_chars.chars().count()
-    ); */
+    );
 }
