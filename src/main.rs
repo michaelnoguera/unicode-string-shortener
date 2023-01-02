@@ -4,6 +4,8 @@ use std::io::{self, Write};
 use unic::ucd::{Block, BlockIter, GeneralCategory, Name};
 use unic_char_range::{chars, CharRange};
 use unidecode::unidecode;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
 
 fn build_unicode_to_ascii_map() -> HashMap<String, char> {
     // build backwards map of unicode to ascii
@@ -151,7 +153,20 @@ fn replace_all(
 }
 
 fn main() {
-    let map = build_unicode_to_ascii_map();
+    /* fix file */
+    let f = File::open("map.tsv").expect("Unable to open file");
+    let mut g = File::create("map2.tsv").expect("Unable to create file");
+    let f = BufReader::new(f);
+
+    for line in f.lines() {
+        let line = line.expect("Unable to read line");
+        assert!(line.chars().nth(1).unwrap() == '\t');
+        g.write(format!("{:#08x}\t{}\n", line.split('\t').nth(0).unwrap().chars().nth(0).unwrap() as u32, line).as_bytes()).expect("Unable to write data");
+    }
+
+
+
+    /*let map = build_unicode_to_ascii_map();
     println!("Map size: {}", map.len());
 
     // take string input, ascii
@@ -186,5 +201,5 @@ fn main() {
         "Shortest in characters used:",
         replaced_chars,
         replaced_chars.chars().count()
-    );
+    ); */
 }
