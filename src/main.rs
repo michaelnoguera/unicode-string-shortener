@@ -4,6 +4,7 @@ use std::io::{self, BufRead, Write};
 use unic_char_range::{CharRange};
 use unidecode::unidecode;
 
+#[allow(dead_code)]
 fn build_unicode_to_ascii_map() -> HashMap<String, char> {
     // build backwards map of unicode to ascii
     let mut map: HashMap<String, char> = std::collections::HashMap::new();
@@ -149,7 +150,7 @@ fn load_map_from_bincode(file: &str) -> Option<HashMap<String, char>> {
         }
     };
 
-    let map: HashMap<String, char> = match bincode::deserialize_from(&mut file) {
+    match bincode::deserialize_from(&mut file) {
         Ok(map) => return Some(map),
         Err(e) => panic!("Error deserializing data from file: {}", e)
     };
