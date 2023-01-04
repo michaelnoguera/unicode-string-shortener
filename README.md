@@ -37,9 +37,11 @@ If you use VS Code and have Docker installed, you can clone this repo into a dev
 
 1. Install the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers), if not already installed.
 
-2. Then click this link.
+2. Then click this link (or if Github disables vscode:// links, paste this address into your browser's address bar).
 
-   [![VS Code Container](https://img.shields.io/static/v1?label=VS+Code&message=Container&logo=visualstudiocode&color=007ACC&logoColor=007ACC&labelColor=2C2C32)](vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/michaelnoguera/unicode-string-shortener)
+   vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/michaelnoguera/unicode-string-shortener
+
+   If you don't feel like clicking my strange-looking links, you can alternatively go to the Command Pallete in VS Code (Ctrl/Cmd + Shift + P), select "Dev Containers: Clone Repository in Container Volume" and specify this repo `https://github.com/michaelnoguera/unicode-string-shortener`.
 
 3. Wait for the container to set itself up. `cargo build` will run automatically to configure dependencies.
 
