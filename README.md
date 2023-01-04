@@ -20,6 +20,20 @@ To update the computer-readable list in `map.bincode`, delete the `map.bincode` 
 
 ## Usage
 
+```
+Shortens ascii strings by substituting unicode characters that look like more than one ascii character
+
+Usage: unishorten [OPTIONS] [input]
+
+Arguments:
+  [input]  string to shorten
+
+Options:
+  -i, --interactive  interactive mode
+  -h, --help         Print help information
+  -V, --version      Print version information
+```
+
 This program is still a work in progress, but core functionality works and it is at a stage where you can try it out by following the development instructions.
 
 I envision a final product available on a website, but it is not yet certain if I will get that far.
