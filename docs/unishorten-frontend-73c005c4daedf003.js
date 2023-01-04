@@ -310,6 +310,10 @@ imports.wbg.__wbg_nodeId_bbf0efafa303e805 = function(arg0, arg1) {
 imports.wbg.__wbg_setnodeId_433ef8ed15bd1612 = function(arg0, arg1) {
     getObject(arg0).$$$nodeId = arg1 >>> 0;
 };
+imports.wbg.__wbg_createTextNode_a7d5f5b956acda97 = function(arg0, arg1) {
+    const ret = getObject(arg0).createTextNode(arg1);
+    return addHeapObject(ret);
+};
 imports.wbg.__wbg_instanceof_Window_acc97ff9f5d2c7b4 = function(arg0) {
     let result;
     try {
@@ -445,8 +449,8 @@ imports.wbg.__wbindgen_debug_string = function(arg0, arg1) {
 imports.wbg.__wbindgen_throw = function(arg0, arg1) {
     throw new Error(getStringFromWasm0(arg0, arg1));
 };
-imports.wbg.__wbindgen_closure_wrapper106 = function(arg0, arg1, arg2) {
-    const ret = makeMutClosure(arg0, arg1, 46, __wbg_adapter_18);
+imports.wbg.__wbindgen_closure_wrapper116 = function(arg0, arg1, arg2) {
+    const ret = makeMutClosure(arg0, arg1, 47, __wbg_adapter_18);
     return addHeapObject(ret);
 };
 
@@ -483,7 +487,7 @@ function initSync(module) {
 
 async function init(input) {
     if (typeof input === 'undefined') {
-        input = new URL('unishorten-frontend-c7c57c35feb5d98e_bg.wasm', import.meta.url);
+        input = new URL('unishorten-frontend-73c005c4daedf003_bg.wasm', import.meta.url);
     }
     const imports = getImports();
 

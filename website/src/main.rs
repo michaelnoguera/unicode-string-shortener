@@ -14,9 +14,29 @@ fn App<G: Html>(cx: Scope) -> View<G> {
         div {
             h1 { "Unicode String Shortener" }
 
-            input(placeholder="input", bind:value=input)
+            div {
+                """
+                This program will replace sets of characters with a single character, to shorten a string. Note that the output is likely not machine readable. Also, because Unicode characters vary in size, it may actually be bigger in bytes than this input.
+                """
+            }
+
+            br{}
             
-            div { (out.get()) }
+            div { 
+                input(placeholder="input (try \"aether\")", bind:value=input)
+                (input.get()) " (" (input.get().chars().count()) " characters)" " -> " (out.get()) " (" (out.get().chars().count()) " characters)"
+            }
+
+            br{}
+
+            footer {
+                small {
+                "Created by "
+                a(href="https://noguera.dev/"){"Michael Noguera"}
+                ". See source code on "
+                a(href="https://github.com/michaelnoguera/unicode-string-shortener"){"Github"} "."
+                }
+            }
         }
     }
 }
