@@ -1,6 +1,9 @@
 use std::collections::HashMap;
 use std::io::{self, BufRead};
 use std::env;
+use bincode::{serialize, deserialize};
+use log::{debug, info, warn, error};
+use std::path::Path;
 
 /// Map parser for map.tsv
 fn load_map_from_tsv(path: &str) -> Option<HashMap<String, char>> {
@@ -118,8 +121,16 @@ pub fn load_map(path: &str) -> Option<HashMap<String, char>> {
 
 fn main() {
     println!("cargo:rerun-if-changed=map.tsv");
-    let map = load_map("map.tsv").unwrap();
+    let map = match load_map("map.tsv") {
+        Some(map) => map,
+        None => panic!("Error loading map"),
+    };
 
     let out_dir = env::var("OUT_DIR").unwrap();
-    store_map(&map, &format!("{}/map.bincode", out_dir)).unwrap();
+    let dest_path = Path::new(&out_dir).join("map.bincode");
+
+    match store_map(&map, &dest_path) {
+        Ok(_) => {},
+        Err(e) => panic!("Error storing map: {}", e),
+    };
 }

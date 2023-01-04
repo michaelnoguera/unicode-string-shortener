@@ -1,9 +1,11 @@
 use std::collections::HashMap;
 use std::io::{self, BufRead};
 use lazy_static::lazy_static;
+use std::path::Path;
+
 
 /// Map parser for map.tsv
-fn load_map_from_tsv(path: &str) -> Option<HashMap<String, char>> {
+fn load_map_from_tsv(path: Path) -> Option<HashMap<String, char>> {
     let mut map: HashMap<String, char> = std::collections::HashMap::new();
 
     let f = match std::fs::File::open(path) {
@@ -51,7 +53,7 @@ fn load_map_from_tsv(path: &str) -> Option<HashMap<String, char>> {
 
 
 /// Map parser for map.bincode
-fn load_map_from_bincode(path: &str) -> Option<HashMap<String, char>> {
+fn load_map_from_bincode(path: Path) -> Option<HashMap<String, char>> {
     log::debug!("Reading serialized data from {}...", path);
     
     let mut file = match std::fs::File::open(path) {
@@ -78,7 +80,7 @@ fn load_map_from_bincode(path: &str) -> Option<HashMap<String, char>> {
 }
 
 /// Store map to bincode file
-pub fn store_map(map: &HashMap<String, char>, path: &str) -> Result<(), &'static str> {
+pub fn store_map(map: &HashMap<String, char>, path: Path) -> Result<(), &'static str> {
     let mut file = match std::fs::File::create(path) {
         Ok(file) => file,
         Err(e) => panic!("Error creating file: {}", e),
@@ -96,9 +98,9 @@ pub fn store_map(map: &HashMap<String, char>, path: &str) -> Result<(), &'static
     Ok(())
 }
 
-pub fn load_map(path: &str) -> Option<HashMap<String, char>> {
+pub fn load_map(path: Path) -> Option<HashMap<String, char>> {
     // if bincode, load from bincode
-    if path.ends_with(".bincode") {
+    if path::extension() == Some("bincode") {
         match load_map_from_bincode(path) {
             Some(map) => return Some(map),
             None => {},
@@ -106,7 +108,7 @@ pub fn load_map(path: &str) -> Option<HashMap<String, char>> {
     }
 
     // if tsv, load from tsv
-    if path.ends_with(".tsv") {
+    if path::extension() == Some("tsv") {
         match load_map_from_tsv(path) {
             Some(map) => return Some(map),
             None => {},
@@ -116,14 +118,18 @@ pub fn load_map(path: &str) -> Option<HashMap<String, char>> {
     return None;
 }
 
+// load map from map.bincode
 lazy_static! {
     pub static ref MAP: HashMap<String, char> = {
-        let map = load_map("map.bincode").unwrap();
+        let out_dir = std::env::var("OUT_DIR").unwrap();
+        let path = std::path::Path::new(&out_dir).join("map.bincode");
+        let mut file = std::fs::File::open(path).unwrap();
+        let map = bincode::deserialize_from(&mut file).unwrap();
         map
     };
 }
 
-pub fn shorten(
+fn shorten(
     input: &str,
     map: &std::collections::HashMap<String, char>,
     selector: fn(Vec<String>) -> String,
@@ -183,10 +189,10 @@ fn shortest_by_chars(replacements: Vec<String>) -> String {
     shortest
 }
 
-pub fn shorten_by_bytes(input: &str, map: &std::collections::HashMap<String, char>) -> String {
-    shorten(input, map, shortest_by_bytes)
+pub fn shorten_by_bytes(input: &str) -> String {
+    shorten(input, &MAP, shortest_by_bytes)
 }
 
-pub fn shorten_by_chars(input: &str, map: &std::collections::HashMap<String, char>) -> String {
-    shorten(input, map, shortest_by_chars)
+pub fn shorten_by_chars(input: &str) -> String {
+    shorten(input, &MAP, shortest_by_chars)
 }
