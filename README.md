@@ -26,28 +26,29 @@ I envision a final product available on a website, but it is not yet certain if 
 
 ## Installation/Development
 
-### Compile locally
+### Option 1: Compile locally
 This assumes you have Rust installed.
+
 1. Clone this repo. `git clone https://github.com/michaelnoguera/unicode-string-shortener`
 2. Run `cargo build` to install dependencies and compile.  This will take a long time the first time you run it on this project.
 3. Run `cargo run` to run the program.
 
-### Clone into a local Docker devcontainer with VS Code
+### Option 2: Clone into a local Docker devcontainer with VS Code
 If you use VS Code and have Docker installed, you can clone this repo into a devcontainer that reproduces my build.
 
 1. Install the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers), if not already installed.
 
-2. Then click this link (or if Github disables vscode:// links, paste this address into your browser's address bar).
+2. Then paste this address into your browser's address bar (Github disables vscode:// links)
 
-   vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/michaelnoguera/unicode-string-shortener
+   `vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/michaelnoguera/unicode-string-shortener`
 
-   If you don't feel like clicking my strange-looking links, you can alternatively go to the Command Pallete in VS Code (Ctrl/Cmd + Shift + P), select "Dev Containers: Clone Repository in Container Volume" and specify this repo `https://github.com/michaelnoguera/unicode-string-shortener`.
+   If you don't feel like clicking my strange-looking links, you can alternatively Open VS Code, open the Command Pallete (Ctrl/Cmd + Shift + P), select "Dev Containers: Clone Repository in Container Volume" and specify this repo `https://github.com/michaelnoguera/unicode-string-shortener`.
 
 3. Wait for the container to set itself up. `cargo build` will run automatically to configure dependencies.
 
 4. Run the program with `cargo run`.
 
-### Clone into a cloud devcontainer with Github Codespaces
+### Option 3: Clone into a cloud devcontainer with Github Codespaces
 To open this repository in Codespaces, use the button below.
 
 > **Warning**
