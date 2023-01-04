@@ -27,8 +27,20 @@ fn main() {
         }
     }
 
-    let map = load_map("src/map.tsv").unwrap();
-    store_map(&map, "src/map.bincode").unwrap();
+    let map = match load_map("src/map.bincode") {
+        Some(m) => m,
+        None => {
+            let map = match load_map("src/map.tsv") {
+                Some(m) => m,
+                None => {
+                    println!("No map file found");
+                    return;
+                }
+            };
+            store_map(&map, "src/map.bincode").unwrap();
+            map
+        }
+    };
     
     println!(
         "{: <30} {: <20} ({})",
