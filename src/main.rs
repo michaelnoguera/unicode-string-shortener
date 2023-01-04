@@ -1,7 +1,7 @@
 
 use unishorten::{shorten_by_bytes, shorten_by_chars, load_map, store_map};
 use std::io::{self, Write};
-use clap::{arg, Command, Arg};
+use clap::{arg, Command};
 
 fn main() {
     let matches = Command::new("unishorten")
