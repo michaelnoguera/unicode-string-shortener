@@ -487,7 +487,7 @@ function initSync(module) {
 
 async function init(input) {
     if (typeof input === 'undefined') {
-        input = new URL('unishorten-frontend-73c005c4daedf003_bg.wasm', import.meta.url);
+        input = new URL('unishorten-frontend-931cc8501d5ed096_bg.wasm', import.meta.url);
     }
     const imports = getImports();
 
