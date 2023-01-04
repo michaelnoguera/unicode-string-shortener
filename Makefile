@@ -1,4 +1,4 @@
-.PHONY = all build-program build-website serve clean build-release build-program-release build-website-release
+.PHONY = all build-program build-website serve clean release build-program-release build-website-release
 
 all: build-program build-website
 
@@ -13,10 +13,10 @@ build-website: website/src
 	rsync -r --delete website/dist/ docs
 
 build-website-release: website/src
-	cd website && trunk build --release --public-url https://noguera.dev/unicode-string-shortener
+	cd website && trunk build --release
 	rsync -r --delete website/dist/ docs
 
-build-release: clean build-program-release build-website-release
+release: clean build-program-release build-website-release
 
 serve: build-website
 	cd website && trunk serve
