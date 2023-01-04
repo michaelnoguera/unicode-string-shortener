@@ -13,7 +13,7 @@ build-website: website/src
 	rsync -r --delete website/dist/ docs
 
 build-website-release: website/src
-	cd website && trunk build --release
+	cd website && trunk build --release --public-url "/unicode-string-shortener/"
 	rsync -r --delete website/dist/ docs
 
 release: clean build-program-release build-website-release
