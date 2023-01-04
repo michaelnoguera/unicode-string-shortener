@@ -1,0 +1,13 @@
+[build]
+target = "index.html"
+release = false
+dist = "dist"
+public_url = "/"
+filehash = true
+
+[serve]
+address = "127.0.0.1"
+port = 1313
+
+[clean]
+cargo = true

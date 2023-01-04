@@ -20,6 +20,10 @@ To update the computer-readable list in `map.bincode`, delete the `map.bincode` 
 
 ## Usage
 
+### As a program
+
+This crate compiles to an executable program, `unishorten`, which by default takes a single argument that is the string to shorten. Alternatively, `unishorten -i` will run in interactive mode and prompt for input.
+
 ```
 Shortens ascii strings by substituting unicode characters that look like more than one ascii character
 
@@ -34,9 +38,9 @@ Options:
   -V, --version      Print version information
 ```
 
-This program is still a work in progress, but core functionality works and it is at a stage where you can try it out by following the development instructions.
+### As a library
 
-I envision a final product available on a website, but it is not yet certain if I will get that far.
+
 
 ## Installation/Development
 
