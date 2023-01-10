@@ -155,27 +155,32 @@ pub fn shorten(
     }
 
     // if input is one char, return it
-    if input.len() == 1 {
+    if input.chars().count() == 1 {
         return input.to_string();
     }
 
     // get all possible replacements
     let mut replacements = Vec::new();
 
-    // replace this letter
+    // replace first i letters
     for i in 1..=input.len() {
         // get substring
-        let substring = &input[..i];
+        let substring: String = input.chars().take(i).collect();
+        let remainder: String = input.chars().skip(i).collect();
         // if substring is in map
-        if let Some(replacement) = map.get(substring) {
+        if let Some(replacement) = map.get(&substring) {
             // add to replacements
             replacements
-                .push(replacement.to_string() + &shorten(&input[i..], map, selector));
+                .push(replacement.to_string() + &shorten(&remainder, map, selector));
         }
     }
 
     // skip this letter
-    replacements.push(input[..1].to_string() + &shorten(&input[1..], map, selector));
+    {
+        let current: String = input.chars().take(1).collect();
+        let remainder: String = input.chars().skip(1).collect();
+        replacements.push(current + &shorten(&remainder, map, selector));
+    }
 
     // find shortest element in replacements list
     let shortest = selector(replacements);
