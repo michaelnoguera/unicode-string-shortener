@@ -16,7 +16,7 @@ fn App<G: Html>(cx: Scope) -> View<G> {
 
             div {
                 """
-                This program will replace sets of characters with a single character, to shorten a string. Note that the output is likely not machine readable. Also, because Unicode characters vary in size, it may actually be bigger in bytes than the input.
+                This program will replace sets of characters with a single character to shorten a string. Note that the output is likely not machine readable. Also, because Unicode characters vary in size, it may actually be bigger in bytes than the input.
                 """
             }
 

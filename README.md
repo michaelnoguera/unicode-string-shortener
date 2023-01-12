@@ -1,5 +1,7 @@
 # Unicode String Shortener
 
+> **Try it out!** Live at [https://noguera.dev/unicode-string-shortener](https://noguera.dev/unicode-string-shortener).
+
 The idea of this project is to compress text in terms of bytes or characters used while maintaining its human readability. Using this program you can enter more text than intended into a limited-size form field.
 
 For the intents of this project, anything that looks close enough to a latin letter to be readable is considered acceptable, even if it may have an entirely different meaning.
@@ -20,9 +22,13 @@ To update the computer-readable list in `map.bincode`, delete the `map.bincode` 
 
 ## Usage
 
-### As a program
+### Online
 
-This crate compiles to an executable program, `unishorten`, which by default takes a single argument that is the string to shorten. Alternatively, `unishorten -i` will run in interactive mode and prompt for input.
+Available online at [https://noguera.dev/unicode-string-shortener](https://noguera.dev/unicode-string-shortener). The program is compiled to webassembly and runs entirely client-side in your browser.
+
+### Command Line Interface
+
+The `program` member of this workspace compiles to an executable program, `unishorten`, which by default takes a single argument that is the string to shorten. Alternatively, `unishorten -i` will run in interactive mode and prompt for input.
 
 ```
 Shortens ascii strings by substituting unicode characters that look like more than one ascii character
@@ -38,9 +44,32 @@ Options:
   -V, --version      Print version information
 ```
 
-### As a library
+### Crate
 
+You can also import the `program` folder of this repo as a library. This can be done with the command:
 
+```terminal
+cargo add --git https://github.com/michaelnoguera/unicode-string-shortener unishorten
+```
+
+After running the command, your `cargo.toml` file should contain:
+```toml
+[dependencies]
+unishorten = { git = "https://github.com/michaelnoguera/unicode-string-shortener", version = "0.1.0" }
+```
+
+Most users will want to instantiate a `StringShortener` rather than interacting with the various utility functions in the library.
+
+```rust
+use unishorten::StringShortener;
+
+let Shortener = StringShortener::new();
+let out = Shortener.shorten_by_chars(/* reference to input string */);
+```
+
+To customize the list of mappings, clone this repository, edit `map.tsv`, then delete `map.bincode` and run the command line program again. The bincode file will be regenerated from whatever the tsv file contains.
+
+---
 
 ## Installation/Development
 
