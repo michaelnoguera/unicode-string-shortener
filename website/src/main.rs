@@ -1,33 +1,61 @@
 use sycamore::prelude::*;
 use unishorten::{StringShortener};
+use unidecode::unidecode;
 
 #[component]
 fn App<G: Html>(cx: Scope) -> View<G> {
     let Shortener = StringShortener::new();
     let input = create_signal(cx, String::new());
+    let use_chars = create_signal(cx, String::new());
     let out = 
         create_memo(cx, move || {
-            Shortener.shorten_by_chars(&input.get())
+            match use_chars.get().as_str() {
+                "chars" => Shortener.shorten_by_chars(&input.get()),
+                "bytes" => Shortener.shorten_by_bytes(&input.get()),
+                _ => Shortener.shorten_by_chars(&input.get())
+            }
         });
 
     view! { cx,
         div {
-            h1 { "Unicode String Shortener" }
+            div(class="container mb-2em") {
+                h1 { "Unicode String Shortener" }
 
-            div {
                 """
-                This program will replace sets of characters with a single character to shorten a string. Note that the output is likely not machine readable. Also, because Unicode characters vary in size, it may actually be bigger in bytes than the input.
+                This program will replace sets of characters with a single character to shorten a string. Note that the output may actually be larger in bytes than the input, because Unicode characters vary in size.
                 """
             }
 
-            br{}
-            
-            div { 
-                input(placeholder="input (try \"aether\")", bind:value=input)
-                (input.get()) " (" (input.get().chars().count()) " characters)" " -> " (out.get()) " (" (out.get().chars().count()) " characters)"
-            }
+            div(class="container mb-2em") {
+                div(class="container") {
+                    div(class="w-50 half-div") {
+                        textarea(id="input", placeholder="input (try \"aether\")", bind:value=input)
+                        span { (input.get().chars().count()) " characters, " (input.get().len()) " bytes" }
+                    }
 
-            br{}
+                    div(class="w-50 half-div") {
+                        textarea(id="output", readonly=true, placeholder="output") { (out.get()) }
+                        span { (out.get().chars().count()) " characters, " (out.get().len()) " bytes" }
+                        button(id="copy-output", onclick="document.getElementById('output').select(); document.execCommand('copy');") { "Copy Output" }
+                    }
+                }
+
+                details(id="more-options") {
+                    summary { "Options" }
+                    div(id="options-div") {
+                        "Reduce the number of "
+                        select(style="display: inline;", bind:value=use_chars) {
+                            option(value="chars") { "Characters" }
+                            option(value="bytes") { "Bytes" }
+                        }
+                        "."
+                    }
+
+                    label(for="computer-sees") { "A computer would transliterate this as" }
+                        input(id="computer-sees", readonly=true, style="width: 100%; box-sizing: border-box;", placeholder="output", value=unidecode(&out.get())) {}
+                    
+                }
+            }
 
             footer {
                 small {
@@ -35,6 +63,8 @@ fn App<G: Html>(cx: Scope) -> View<G> {
                 a(href="https://noguera.dev/"){"Michael Noguera"}
                 ". See source code on "
                 a(href="https://github.com/michaelnoguera/unicode-string-shortener"){"Github"} "."
+
+                " All processing done client-side."
                 }
             }
         }

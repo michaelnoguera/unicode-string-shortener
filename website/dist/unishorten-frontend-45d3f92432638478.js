@@ -205,7 +205,7 @@ function makeMutClosure(arg0, arg1, dtor, f) {
     return real;
 }
 function __wbg_adapter_18(arg0, arg1, arg2) {
-    wasm._dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h2cd39ca7aeda3fc6(arg0, arg1, addHeapObject(arg2));
+    wasm._dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h0d330e863a1bd4f4(arg0, arg1, addHeapObject(arg2));
 }
 
 function getCachedStringFromWasm0(ptr, len) {
@@ -314,6 +314,10 @@ imports.wbg.__wbg_createTextNode_a7d5f5b956acda97 = function(arg0, arg1) {
     const ret = getObject(arg0).createTextNode(arg1);
     return addHeapObject(ret);
 };
+imports.wbg.__wbg_setclassName_f86a95d6ffe042e6 = function() { return handleError(function (arg0, arg1, arg2) {
+    var v0 = getCachedStringFromWasm0(arg1, arg2);
+    getObject(arg0).className = v0;
+}, arguments) };
 imports.wbg.__wbg_instanceof_Window_acc97ff9f5d2c7b4 = function(arg0) {
     let result;
     try {
@@ -449,8 +453,8 @@ imports.wbg.__wbindgen_debug_string = function(arg0, arg1) {
 imports.wbg.__wbindgen_throw = function(arg0, arg1) {
     throw new Error(getStringFromWasm0(arg0, arg1));
 };
-imports.wbg.__wbindgen_closure_wrapper116 = function(arg0, arg1, arg2) {
-    const ret = makeMutClosure(arg0, arg1, 47, __wbg_adapter_18);
+imports.wbg.__wbindgen_closure_wrapper77 = function(arg0, arg1, arg2) {
+    const ret = makeMutClosure(arg0, arg1, 11, __wbg_adapter_18);
     return addHeapObject(ret);
 };
 
@@ -487,7 +491,7 @@ function initSync(module) {
 
 async function init(input) {
     if (typeof input === 'undefined') {
-        input = new URL('unishorten-frontend-f21130fab15468c4_bg.wasm', import.meta.url);
+        input = new URL('unishorten-frontend-45d3f92432638478_bg.wasm', import.meta.url);
     }
     const imports = getImports();
 

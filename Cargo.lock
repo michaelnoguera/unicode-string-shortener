@@ -430,6 +430,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "84a22b9f218b40614adcb3f4ff08b703773ad44fa9423e4e0d346d5db86e4ebc"
 
 [[package]]
+name = "unidecode"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "402bb19d8e03f1d1a7450e2bd613980869438e0666331be3e073089124aa1adc"
+
+[[package]]
 name = "unishorten"
 version = "0.1.0"
 dependencies = [
@@ -446,6 +452,7 @@ dependencies = [
  "console_log",
  "log",
  "sycamore",
+ "unidecode",
  "unishorten",
 ]
 

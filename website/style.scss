@@ -1,0 +1,39 @@
+.container {
+    margin: 10px 0;
+}
+
+.mb-2em {
+    margin-bottom: 2em;
+}
+
+.w-50 {
+    width: 50%;
+}
+
+.half-div {
+    display: inline-block;
+    width: 48%;
+    padding: 0 1%;
+    vertical-align: top;
+}
+
+#more-options {
+    margin: 0 1%;
+}
+
+#copy-output {
+    background: hsla(122, 100%, 75%, 0.5);
+    float: right;
+
+}
+
+// responsive half-div
+@media (max-width: 768px) {
+    .half-div {
+        width: 100%;
+        margin-bottom: 1em;
+        border: 1px solid gray;
+        border-radius: 6px;
+        padding: 6px;
+    }
+}
